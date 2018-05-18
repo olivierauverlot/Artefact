@@ -200,6 +200,24 @@ PDFStreamPrinter >> initialize [
 	size := Dictionary new.
 ]
 
+{ #category : #print }
+PDFStreamPrinter >> lf [
+
+	stream nextPut: Character lf asciiValue
+]
+
+{ #category : #print }
+PDFStreamPrinter >> nextPut: aCharacter [
+
+	stream nextPut: aCharacter asciiValue
+]
+
+{ #category : #accessing }
+PDFStreamPrinter >> nextPutAll: someBytes [
+
+	stream nextPutAll: someBytes
+]
+
 { #category : #accessing }
 PDFStreamPrinter >> positions [
 	^ positions
@@ -225,40 +243,40 @@ PDFStreamPrinter >> printElementCodeSegment: anElementCodeSegment [
 PDFStreamPrinter >> printModel: aPDFCompleteModel compression: mustBeCompressed on: aStream [ 
 	self compression: mustBeCompressed.
 	stream := aStream.
-	stream nextPutAll: '%PDF-1.4'; lf.
+	self nextPutAll: '%PDF-1.4'; lf.
 	aPDFCompleteModel acceptVisitor: self.
-	stream nextPutAll: '%%EOF'; lf.
+	self  nextPutAll: '%%EOF';  lf.
 	
 ]
 
 { #category : #print }
 PDFStreamPrinter >> printPDFDataAssociativeArray: aPDFDataAssociativeArray [
-	stream
+	self 
 		nextPutAll: '<<';
-		crlf.
+		nextPutAll: String crlf.
 	aPDFDataAssociativeArray associativeArray
 		do: [ :aCouple | 
 			aCouple isPrintable
-				ifTrue: [ aCouple printOn: stream ]
+				ifTrue: [ aCouple printOn: self ]
 				ifFalse: [ aCouple printWith: self ].
-			stream lf ].
-	stream nextPutAll: '>>'
+			self  lf ].
+	self nextPutAll: '>>'
 ]
 
 { #category : #print }
 PDFStreamPrinter >> printPDFDataCouple: aPDFDataCouple [
 	aPDFDataCouple key isPrintable
-		ifTrue: [ aPDFDataCouple key printOn: stream ]
+		ifTrue: [ aPDFDataCouple key printOn: self ]
 		ifFalse: [ aPDFDataCouple key printWith: self ].
-	stream space.
+	self space.
 	aPDFDataCouple value isPrintable
-		ifTrue: [ aPDFDataCouple value printOn: stream ]
+		ifTrue: [ aPDFDataCouple value printOn: self ]
 		ifFalse: [ aPDFDataCouple value printWith: self ]
 ]
 
 { #category : #print }
 PDFStreamPrinter >> printPDFDataStartXref: aPDFDataStartXref [
-	stream
+	self
 		nextPutAll: 'startxref';
 		lf;
 		nextPutAll: (self positions at: aPDFDataStartXref xref) asString;
@@ -267,47 +285,45 @@ PDFStreamPrinter >> printPDFDataStartXref: aPDFDataStartXref [
 
 { #category : #print }
 PDFStreamPrinter >> printPDFDataStream: aPDFDataStream [
+
 	| endPosition startPosition streamData |
-	
-	stream
-		nextPutAll: 'stream';
-		lf.
+	self nextPutAll: 'stream'.
+	self lf.
 	startPosition := stream position.
 	
-	self streamContent: (WriteStream on:  String new).
+	self streamContent: (WriteStream on: String new).
 	aPDFDataStream codeSegment printWith: self.
 	streamData := self streamContent contents.
-	(self compression) ifTrue: [ streamData := (self compressWithGZip: streamData) asByteArray  ].
+	self compression ifTrue: [ streamData := (self compressWithGZip: streamData) asByteArray  ].
 
-	stream
-		nextPutAll: streamData; lf.
+	self nextPutAll: streamData.
+	self lf.
 
 	endPosition := stream position.
 	self size at: aPDFDataStream put: endPosition - startPosition.
-	stream nextPutAll: 'endstream'
+	self nextPutAll: 'endstream'
 ]
 
 { #category : #print }
 PDFStreamPrinter >> printPDFDataStreamRefSize: aPDFDataStreamRefSize [
-	stream
-		nextPutAll: (self size at: aPDFDataStreamRefSize pdfDataStream) asString
+	self nextPutAll: (self size at: aPDFDataStreamRefSize pdfDataStream) asString
 ]
 
 { #category : #visit }
 PDFStreamPrinter >> printPDFDataXObjectStream: aPDFDataXObjectStream [
 	| endPosition startPosition |
-	stream nextPutAll: 'stream'; lf.
+	self nextPutAll: 'stream'; lf.
 	startPosition := stream position.
-	stream nextPutAll: (aPDFDataXObjectStream stream reset contents).
+	self nextPutAll: (aPDFDataXObjectStream stream reset contents).
 	endPosition := stream position.
-	stream lf.
+	self lf.
 	self size at: aPDFDataXObjectStream put: endPosition - startPosition.
-	stream nextPutAll: 'endstream'.
+	self nextPutAll: 'endstream'.
 ]
 
 { #category : #util }
 PDFStreamPrinter >> resetRotation: aRotation into: aStream [
-	(aRotation = 0) ifFalse: [ 
+	aRotation = 0 ifFalse: [ 
 		aStream
 			nextPut: Character lf;
 			nextPutAll: PDFByteCode restoreGraphicsState.
@@ -329,6 +345,12 @@ PDFStreamPrinter >> setLineCapStyleFor: anElementCodeSegment stylesheet: styleSh
 { #category : #accessing }
 PDFStreamPrinter >> size [
 	^ size
+]
+
+{ #category : #print }
+PDFStreamPrinter >> space [
+
+	stream nextPut: Character space asciiValue
 ]
 
 { #category : #accessing }
@@ -371,9 +393,9 @@ PDFStreamPrinter >> visitPDFDataDateAndTime: aPDFDataDateAndTime [
 { #category : #visit }
 PDFStreamPrinter >> visitPDFDataObject: aPDFDataObject [
 	self positions at: aPDFDataObject put: stream position.
-	stream
+	self 
 		nextPutAll: aPDFDataObject id asString;
-		space;
+	   space ;
 		nextPutAll: aPDFDataObject revision asString;
 		space;
 		nextPutAll: 'obj';
@@ -381,10 +403,10 @@ PDFStreamPrinter >> visitPDFDataObject: aPDFDataObject [
 	aPDFDataObject contents
 		do: [ :aContent | 
 			aContent isPrintable
-				ifTrue: [ aContent printOn: stream ]
+				ifTrue: [ aContent printOn: self ]
 				ifFalse: [ aContent printWith: self ].
-			stream lf ].
-	stream
+			self lf ].
+	self 
 		nextPutAll: 'endobj';
 		lf.
 	aPDFDataObject contents do: [ :aContent | aContent acceptVisitor: self ]
@@ -423,15 +445,15 @@ PDFStreamPrinter >> visitPDFDataSymbol: aPDFDataSymbol [
 { #category : #visit }
 PDFStreamPrinter >> visitPDFDataTrailer: aPDFDataTrailer [
 	aPDFDataTrailer contents do: [ :aContent | aContent acceptVisitor: self ].
-	stream
+	self
 		nextPutAll: 'trailer';
 		lf.
 	aPDFDataTrailer contents
 		do: [ :aContent | 
 			aContent isPrintable
-				ifTrue: [ aContent printOn: stream ]
+				ifTrue: [ aContent printOn: self ]
 				ifFalse: [ aContent printWith: self ].
-			stream lf ]
+			self lf ]
 ]
 
 { #category : #visit }
@@ -447,10 +469,10 @@ PDFStreamPrinter >> visitPDFDataXObjectStream: aPDFDataXObjectStream [
 { #category : #visit }
 PDFStreamPrinter >> visitPDFDataXRef: aPDFDataXRef [
 	self positions at: aPDFDataXRef put: stream position.
-	stream
+	self
 		nextPutAll: 'xref';
 		lf.
-	stream
+	self
 		nextPutAll: '0 ';
 		nextPutAll: aPDFDataXRef referencies size asString;
 		lf.
@@ -461,13 +483,13 @@ PDFStreamPrinter >> visitPDFDataXRef: aPDFDataXRef [
 PDFStreamPrinter >> visitPDFDataXRefEntry: aPDFDataXRefEntry [
 	| positionString |
 	aPDFDataXRefEntry referencedObject
-		ifNil: [ stream
+		ifNil: [ self
 				nextPutAll: '0000000000 65535 f ';
 				lf ]
 		ifNotNil: [ :aPDFDataObject | 
 			positionString := (self positions at: aPDFDataObject) asString.
-			1 to: 10 - positionString size do: [ :i | stream nextPut: $0 ].
-			stream
+			1 to: 10 - positionString size do: [ :i | self nextPut: $0 ].
+			self
 				nextPutAll: positionString;
 				nextPutAll: ' 00000 n ';
 				lf ]
