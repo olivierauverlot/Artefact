@@ -2,7 +2,7 @@ Extension { #name : #StyleSheet }
 
 { #category : #'*Artefact-Core' }
 StyleSheet >> alignment [
-	^ self get: #alignment
+	^ self at: #alignment
 ]
 
 { #category : #'*Artefact-Core' }
@@ -51,7 +51,7 @@ StyleSheet >> fillColor: aPDFColor [
 
 { #category : #'*Artefact-Core' }
 StyleSheet >> filled [
-	^ self get: #filled
+	^ self at: #filled
 ]
 
 { #category : #'*Artefact-Core' }
@@ -61,7 +61,7 @@ StyleSheet >> filled: aBoolean [
 
 { #category : #'*Artefact-Core' }
 StyleSheet >> font [
-	^ self get: #font
+	^ self at: #font
 ]
 
 { #category : #'*Artefact-Core' }
@@ -71,7 +71,7 @@ StyleSheet >> font: aFont [
 
 { #category : #'*Artefact-Core' }
 StyleSheet >> margin [
-	^ self get: #margin
+	^ self at: #margin
 ]
 
 { #category : #'*Artefact-Core' }
@@ -81,7 +81,7 @@ StyleSheet >> margin: aMargin [
 
 { #category : #'*Artefact-Core' }
 StyleSheet >> opacity [
-	^ self get: #opacity
+	^ self at: #opacity
 ]
 
 { #category : #'*Artefact-Core' }

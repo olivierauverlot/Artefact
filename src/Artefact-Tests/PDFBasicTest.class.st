@@ -24,5 +24,5 @@ PDFBasicTest >> setUp [
 
 { #category : #tests }
 PDFBasicTest >> testSplitCoordinates [
-	self assert: (self element splitCoordinates: 20@30) = '20 30'.
+	self assert: (self element splitCoordinates: 20@30) equals: '20 30'.
 ]

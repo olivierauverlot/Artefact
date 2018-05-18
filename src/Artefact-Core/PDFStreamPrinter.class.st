@@ -68,13 +68,14 @@ PDFStreamPrinter >> generateRotationCodeFor: anElementCodeSegment styleSheet: st
 	"insert rotation configuration"
 
 	| angle cx cy |
-
-	angle := (styleSheet get: #rotation) * (Float pi / 180).
-	
-	cx := (self convertToPoints: anElementCodeSegment fromElement from x) round: 4.
-	cy := (self convertToPoints: anElementCodeSegment format height - (self convertToPoints: anElementCodeSegment fromElement from y)) round: 4.
-
-
+	angle := (styleSheet at: #rotation) * (Float pi / 180).
+	cx := (self convertToPoints: anElementCodeSegment fromElement from x)
+		round: 4.
+	cy := (self
+		convertToPoints:
+			anElementCodeSegment format height
+				- (self convertToPoints: anElementCodeSegment fromElement from y))
+		round: 4.
 	^ String
 		streamContents: [ :code | 
 			code
@@ -91,13 +92,13 @@ PDFStreamPrinter >> generateRotationCodeFor: anElementCodeSegment styleSheet: st
 				nextPutAll: cx asString;
 				space;
 				"il faut récupérer la hauteur de la page pour calculer la pos y ci dessous (h - y)"
-				nextPutAll: cy asString;
+					nextPutAll: cy asString;
 				space;
 				nextPutAll: 'cm 1 0 0 1';
 				space;
-				nextPutAll: (cx negated) asString;
+				nextPutAll: cx negated asString;
 				space;
-				nextPutAll: (cy  negated) asString;
+				nextPutAll: cy negated asString;
 				space;
 				nextPutAll: 'cm';
 				nextPutAll: String lf ]
@@ -109,32 +110,44 @@ PDFStreamPrinter >> generateStyleCodeForElement: anElementCodeSegment [
 	styleSheet := anElementCodeSegment styleSheet.
 	^ String
 		streamContents: [ :code | 
-			((styleSheet get: #rotation) ~= 0) ifTrue: [ 
-				code nextPutAll: (self generateRotationCodeFor: anElementCodeSegment styleSheet: styleSheet)
-			].
-			thickness := styleSheet get: #thickness.
-			code nextPutAll: (self convertToPoints: thickness) asString , ' ' , PDFByteCode thickness , String lf.	
+			(styleSheet at: #rotation) ~= 0
+				ifTrue: [ code
+						nextPutAll:
+							(self
+								generateRotationCodeFor: anElementCodeSegment
+								styleSheet: styleSheet) ].
+			thickness := styleSheet at: #thickness.
+			code
+				nextPutAll:
+					(self convertToPoints: thickness) asString , ' '
+						, PDFByteCode thickness , String lf.
 			"Set line cap style to square"
-			code nextPutAll: (self setLineCapStyleFor: anElementCodeSegment stylesheet: styleSheet).
+			code
+				nextPutAll: (self setLineCapStyleFor: anElementCodeSegment stylesheet: styleSheet).
 			"Set the colors or grey levels"
 			code
-				nextPutAll: (self initColors: styleSheet useDrawColor: anElementCodeSegment isDrawElement);
+				nextPutAll:
+					(self
+						initColors: styleSheet
+						useDrawColor: anElementCodeSegment isDrawElement);
 				nextPutAll: String lf.	"Set the dotted propertie"
-			dotted := styleSheet get: #dotted.
+			dotted := styleSheet at: #dotted.
 			dotted
-				ifNil: [ 
-					code
+				ifNil: [ code
 						nextPutAll: '[] 0 ' , PDFByteCode dotted;
 						nextPutAll: String lf ]
-				ifNotNil: [ 
-					code
+				ifNotNil: [ code
 						nextPutAll: (dotted generateCodeWith: self);
 						nextPutAll: String lf ].	"Insert the font size in the PDF document"
 			code
-				nextPutAll: 'BT /' , anElementCodeSegment fontId , ' ' , styleSheet font fontSizeAsPoints asString , ' Tf ET';
+				nextPutAll:
+					'BT /' , anElementCodeSegment fontId , ' '
+						, styleSheet font fontSizeAsPoints asString , ' Tf ET';
 				nextPutAll: String lf.
-			code nextPutAll: '/' , anElementCodeSegment opacityId , ' ' , PDFByteCode setOpacity , String lf.
-		]
+			code
+				nextPutAll:
+					'/' , anElementCodeSegment opacityId , ' ' , PDFByteCode setOpacity
+						, String lf ]
 ]
 
 { #category : #compression }
@@ -151,28 +164,34 @@ PDFStreamPrinter >> getGZipData: aString [
 { #category : #util }
 PDFStreamPrinter >> initColors: aStyleSheet useDrawColor: useDrawColor [
 	| drawColor fillColor textColor |
-	
-	drawColor := aStyleSheet get: #drawColor.
-	fillColor := aStyleSheet get: #fillColor.
-	textColor := aStyleSheet get: #textColor.
-	
-	^ String streamContents: [ :code |
-		useDrawColor ifTrue: [
-			(fillColor greyLevel isNil)
-			ifTrue: [ (fillColor red isNil) ifFalse: [ code nextPutAll: ((PDFColor formatRGB: fillColor) , ' ' , PDFByteCode fillWithColor) ] ]
-			ifFalse: [ code nextPutAll: (PDFColor round: (fillColor greyLevel)) , ' ' , PDFByteCode fillWithGreyLevel ].
-		]
-		ifFalse: [
-			(textColor greyLevel isNil)
-				ifTrue: [ (textColor red isNil) ifFalse: [ code nextPutAll: ((PDFColor formatRGB: textColor) , ' rg') ] ]
-				ifFalse: [ code nextPutAll: (PDFColor round: (textColor greyLevel)) , ' g' ].
-		].
-		code nextPutAll: String lf.
-		(drawColor greyLevel isNil) 
-				ifTrue: [ (drawColor red isNil) ifFalse: [ code nextPutAll: ((PDFColor formatRGB: drawColor) , ' ' , PDFByteCode drawWithColor) ] ]
-				ifFalse: [ code nextPutAll: (PDFColor round: (drawColor greyLevel)) , ' ' , PDFByteCode drawWithGreyLevel ].
-		code nextPutAll: String lf.		
-	]
+	drawColor := aStyleSheet at: #drawColor.
+	fillColor := aStyleSheet at: #fillColor.
+	textColor := aStyleSheet at: #textColor.
+	^ String
+		streamContents: [ :code | 
+			useDrawColor
+				ifTrue: [ fillColor greyLevel isNil
+						ifTrue: [ fillColor red isNil
+								ifFalse: [ code
+										nextPutAll: (PDFColor formatRGB: fillColor) , ' ' , PDFByteCode fillWithColor ] ]
+						ifFalse: [ code
+								nextPutAll:
+									(PDFColor round: fillColor greyLevel) , ' '
+										, PDFByteCode fillWithGreyLevel ] ]
+				ifFalse: [ textColor greyLevel isNil
+						ifTrue: [ textColor red isNil
+								ifFalse: [ code nextPutAll: (PDFColor formatRGB: textColor) , ' rg' ] ]
+						ifFalse: [ code nextPutAll: (PDFColor round: textColor greyLevel) , ' g' ] ].
+			code nextPutAll: String lf.
+			drawColor greyLevel isNil
+				ifTrue: [ drawColor red isNil
+						ifFalse: [ code
+								nextPutAll: (PDFColor formatRGB: drawColor) , ' ' , PDFByteCode drawWithColor ] ]
+				ifFalse: [ code
+						nextPutAll:
+							(PDFColor round: drawColor greyLevel) , ' '
+								, PDFByteCode drawWithGreyLevel ].
+			code nextPutAll: String lf ]
 ]
 
 { #category : #'initialize-release' }
@@ -193,13 +212,13 @@ PDFStreamPrinter >> printCompositeCodeSegment: aCompositeCodeSegment [
 
 { #category : #print }
 PDFStreamPrinter >> printElementCodeSegment: anElementCodeSegment [
-
-	self streamContent nextPutAll: (self generateStyleCodeForElement: anElementCodeSegment).
+	self streamContent
+		nextPutAll: (self generateStyleCodeForElement: anElementCodeSegment).
 	self streamContent nextPutAll: anElementCodeSegment code.
-	self resetRotation: (anElementCodeSegment styleSheet get: #rotation) into: self streamContent.
-	self streamContent nextPut: Character lf.
-
-
+	self
+		resetRotation: (anElementCodeSegment styleSheet at: #rotation)
+		into: self streamContent.
+	self streamContent nextPut: Character lf
 ]
 
 { #category : #print }
@@ -301,13 +320,10 @@ PDFStreamPrinter >> setLineCapStyleFor: anElementCodeSegment stylesheet: styleSh
 
 	^ String
 		streamContents: [ :code | 
-			(styleSheet get: #roundCap)
-				ifTrue: [ code nextPutAll: PDFByteCode  lineRoundCapStyle ]
-				ifFalse: [  code nextPutAll: PDFByteCode  lineSquareCapStyle ].
-			code nextPutAll: String lf.
-		 ]
-
-
+			(styleSheet at: #roundCap)
+				ifTrue: [ code nextPutAll: PDFByteCode lineRoundCapStyle ]
+				ifFalse: [ code nextPutAll: PDFByteCode lineSquareCapStyle ].
+			code nextPutAll: String lf ]
 ]
 
 { #category : #accessing }

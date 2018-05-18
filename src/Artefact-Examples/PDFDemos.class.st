@@ -362,7 +362,7 @@ PDFDemos >> DVDTemplateTest: aStream [
 	| pdfdoc |
 	pdfdoc := PDFDocument new.
 	pdfdoc add: (PDFDVDCoverTemplate new format: (PDFCompactDiscTemplate recommendedPageFormat)).
-pdfdoc exportTo: aStream
+	pdfdoc exportTo: aStream
 
 ]
 
