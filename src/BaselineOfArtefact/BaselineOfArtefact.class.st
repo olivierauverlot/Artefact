@@ -9,7 +9,7 @@ BaselineOfArtefact >> baseline: spec [
 	<baseline>
 	spec
 		baseline: 'Stylesheet'
-		with: [ spec repository: 'github://olivierauverlot/Stylesheet' ].
+		with: [ spec repository: 'github://olivierauverlot/Stylesheet/src' ].
 	spec 
 		project: 'Units' 
 			with: [
